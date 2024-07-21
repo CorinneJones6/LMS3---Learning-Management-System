@@ -125,7 +125,7 @@ namespace LMS.Controllers
                                         select (int?)s.Score).FirstOrDefault()
                             };
 
-            return Json(assignments.ToArray());
+            return Json(assignments);
         }
 
 
@@ -147,27 +147,35 @@ namespace LMS.Controllers
         /// <param name="uid">The student submitting the assignment</param>
         /// <param name="contents">The text contents of the student's submission</param>
         /// <returns>A JSON object containing {success = true/false}</returns>
-        public IActionResult SubmitAssignmentText(string subject, int num, string season, int year,
-          string category, string asgname, string uid, string contents)
+        public IActionResult SubmitAssignmentText(string subject, int num, string season, int year, string category, string asgname, string uid, string contents)
         {
-            var assignment = (from a in db.Assignments
-                            join ac in db.AssignmentCategories on a.Category equals ac.CategoryId
-                            join c in db.Classes on ac.InClass equals c.ClassId
-                            join course in db.Courses on c.Listing equals course.CatalogId
-                            where course.Department == subject && course.Number == num &&
-                                    c.Season == season && c.Year == year &&
-                                    ac.Name == category && a.Name == asgname
-                            select a).FirstOrDefault();
+            int numberCategory = int.Parse(category);
 
-            if (assignment == null)
+            var course = db.Courses.SingleOrDefault(c => c.Department == subject && c.Number == num);
+            if (course == null)
             {
-                return Json(new { success = false });
+                return Json(new { success = false, message = "Course not found" });
             }
 
-            var submission = (from s in db.Submissions
-                            where s.Assignment == assignment.AssignmentId && s.Student == uid
-                            select s).FirstOrDefault();
+            var cls = db.Classes.SingleOrDefault(c => c.Listing == course.CatalogId && c.Season == season && c.Year == year);
+            if (cls == null)
+            {
+                return Json(new { success = false, message = "Class not found" });
+            }
 
+            var categoryName = db.AssignmentCategories.SingleOrDefault(ac => ac.InClass == cls.ClassId && ac.CategoryId == numberCategory);
+            if (categoryName == null)
+            {
+                return Json(new { success = false, message = "Assignment category not found" });
+            }
+
+            var assignment = db.Assignments.SingleOrDefault(a => a.Category == categoryName.CategoryId && a.Name == asgname);
+            if (assignment == null)
+            {
+                return Json(new { success = false, message = "Assignment not found" });
+            }
+
+            var submission = db.Submissions.SingleOrDefault(s => s.Assignment == assignment.AssignmentId && s.Student == uid);
             if (submission == null)
             {
                 submission = new Submission
@@ -189,6 +197,8 @@ namespace LMS.Controllers
             db.SaveChanges();
             return Json(new { success = true });
         }
+
+        
 
 
         /// <summary>
