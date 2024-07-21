@@ -122,8 +122,8 @@ namespace LMS_CustomIdentity.Controllers
                                  e.ClassNavigation.Season == season && e.ClassNavigation.Year == year
                            select new
                            {
-                               fName = e.StudentNavigation.FName,
-                               lName = e.StudentNavigation.LName,
+                               fname = e.StudentNavigation.FName,
+                               lname = e.StudentNavigation.LName,
                                uid = e.StudentNavigation.UId,
                                dob = e.StudentNavigation.Dob,
                                grade = e.Grade
@@ -274,7 +274,6 @@ namespace LMS_CustomIdentity.Controllers
             db.Assignments.Add(assignment);
             db.SaveChanges();
 
-            // When a professor creates a new assignment, update the grades of all students in the class
             UpdateStudentGrades((int)cls.ClassId);
 
             return Json(new { success = true });
@@ -411,22 +410,21 @@ namespace LMS_CustomIdentity.Controllers
                 var assignments = db.Assignments.Where(a => a.Category == category.CategoryId).ToList();
                 if (!assignments.Any()) continue;
 
-                // Calculate the percentage of total points earned in the category
-                double categoryMaxPoints = assignments.Sum(a => (double)a.MaxPoints); // Ensure MaxPoints is cast to double for calculation
-                double categoryEarnedPoints = assignments.Sum(a => a.Submissions
-                    .Where(s => s.Student == studentId)
-                    .Select(s => (double)s.Score).DefaultIfEmpty(0.0).Sum());
+                double categoryMaxPoints = assignments.Sum(a => (double)a.MaxPoints);
+
+                double categoryEarnedPoints = db.Submissions
+                    .Where(s => assignments.Select(a => a.AssignmentId).Contains(s.Assignment) && s.Student == studentId)
+                    .Sum(s => (double)s.Score);
 
                 double categoryPercentage = categoryEarnedPoints / categoryMaxPoints;
-                // Multiply the percentage by the category weight
+
                 totalScore += categoryPercentage * category.Weight;
             }
 
-            // Compute the scaling factor to make all category weights add up to 100%
             double scalingFactor = 100.0 / totalWeight;
-            // Multiply the total score by the scaling factor
+
             double finalScore = totalScore * scalingFactor;
-            // Convert the class percentage to a letter grade
+
             return ConvertToLetterGrade(finalScore);
         }
 

@@ -111,14 +111,15 @@ namespace LMS.Controllers
             var assignments = from e in db.Enrolleds
                             join c in db.Classes on e.Class equals c.ClassId
                             join course in db.Courses on c.Listing equals course.CatalogId
-                            join a in db.Assignments on c.ClassId equals a.Category 
+                            join ac in db.AssignmentCategories on c.ClassId equals ac.InClass
+                            join a in db.Assignments on ac.CategoryId equals a.Category
                             where course.Department == subject && course.Number == num &&
                                     c.Season == season && c.Year == year &&
                                     e.Student == uid
                             select new
                             {
                                 aname = a.Name,
-                                cname = a.Category,
+                                cname = ac.Name,
                                 due = a.Due,
                                 score = (from s in db.Submissions
                                         where s.Assignment == a.AssignmentId && s.Student == uid
@@ -149,7 +150,6 @@ namespace LMS.Controllers
         /// <returns>A JSON object containing {success = true/false}</returns>
         public IActionResult SubmitAssignmentText(string subject, int num, string season, int year, string category, string asgname, string uid, string contents)
         {
-            int numberCategory = int.Parse(category);
 
             var course = db.Courses.SingleOrDefault(c => c.Department == subject && c.Number == num);
             if (course == null)
@@ -163,7 +163,7 @@ namespace LMS.Controllers
                 return Json(new { success = false, message = "Class not found" });
             }
 
-            var categoryName = db.AssignmentCategories.SingleOrDefault(ac => ac.InClass == cls.ClassId && ac.CategoryId == numberCategory);
+            var categoryName = db.AssignmentCategories.SingleOrDefault(ac => ac.InClass == cls.ClassId && ac.Name == category);
             if (categoryName == null)
             {
                 return Json(new { success = false, message = "Assignment category not found" });
