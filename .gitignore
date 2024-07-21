@@ -428,3 +428,5 @@ project.nuget.cache
 
 # Ignore coverage reports
 coverage/
+
+.DS_Store
