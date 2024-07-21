@@ -27,6 +27,6 @@ public partial class Class
 
     public virtual Course ListingNavigation { get; set; } = null!;
 
-    // public virtual Professor? TaughtByNavigation { get; set; }
-    public virtual Professor TaughtByNavigation { get; set; } = null!;
+    public virtual Professor? TaughtByNavigation { get; set; }
+    // public virtual Professor? TaughtByNavigation { get; set; } = null!;
 }
