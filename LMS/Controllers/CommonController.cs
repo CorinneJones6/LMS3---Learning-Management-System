@@ -180,8 +180,8 @@ namespace LMS.Controllers
             {
                 var adminUser = new
                 {
-                    firstName = admin.FName,
-                    lastName = admin.LName,
+                    fname = admin.FName,
+                    lname = admin.LName,
                     uid = admin.UId,
                 };
 
@@ -192,8 +192,8 @@ namespace LMS.Controllers
             {
                 var professorUser = new
                 {
-                    firstName = professor.FName,
-                    lastName = professor.LName,
+                    fname = professor.FName,
+                    lname = professor.LName,
                     uid = professor.UId,
                     department = professor.WorksIn
                 };
@@ -205,8 +205,8 @@ namespace LMS.Controllers
             {
                 var studentUser = new
                 {
-                    firstName = student.FName,
-                    lastName = student.LName,
+                    fname = student.FName,
+                    lname = student.LName,
                     uid = student.UId,
                     department = student.Major
                 };
